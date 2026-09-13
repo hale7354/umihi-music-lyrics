@@ -53,6 +53,7 @@ import ca.ilianokokoro.umihi.music.ui.screens.player.PlayerScreen
 import ca.ilianokokoro.umihi.music.ui.screens.playlist.PlaylistScreen
 import ca.ilianokokoro.umihi.music.ui.screens.search.SearchScreen
 import ca.ilianokokoro.umihi.music.ui.screens.settings.SettingsScreen
+import ca.ilianokokoro.umihi.music.ui.screens.performance.PerformanceScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,6 +157,7 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                             SettingsScreen(
                                 sharedViewModel = sharedViewModel,
                                 openAuthScreen = { backStack.add(AuthScreenKey) },
+                                openPerformanceScreen = { backStack.add(PerformanceScreenKey) },
                                 application = app
                             )
                         }
@@ -181,6 +183,13 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                         is SearchScreenKey -> NavEntry(key) {
                             SearchScreen(
                                 application = app,
+                            )
+                        }
+
+                        is PerformanceScreenKey -> NavEntry(key) {
+                            PerformanceScreen(
+                                onBack = backStack::safePop,
+                                application = app
                             )
                         }
 
