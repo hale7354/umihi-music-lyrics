@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
@@ -66,13 +67,14 @@ fun PlayerControls(
     onOpenVolume: () -> Unit,
     onOpenSleepTimer: () -> Unit,
     onOpenSpeedSelector: () -> Unit,
+    onOpenLyrics: () -> Unit,
     playbackSpeed: Float,
     sleepTimerRemainingSeconds: Long?,
 ) {
     val mainButtonsControlsInteractionSources =
         List(3) { ComposeHelper.rememberInteractionSource() }
     val actionButtonsControlsInteractionSources =
-        List(6) { ComposeHelper.rememberInteractionSource() }
+        List(7) { ComposeHelper.rememberInteractionSource() }
 
     val hapticFeedback = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -378,6 +380,34 @@ fun PlayerControls(
                             Icon(
                                 imageVector = Icons.Rounded.Shuffle,
                                 contentDescription = stringResource(R.string.shuffle),
+                                modifier = Modifier.size(iconSize)
+                            )
+                        }
+                    },
+                    {}
+                )
+
+                // Lyrics — MIDDLE segment
+                customItem(
+                    {
+                        FilledIconButton(
+                            onClick = onOpenLyrics,
+                            shapes = IconButtonDefaults.shapes(
+                                shape = ButtonGroupDefaults.connectedMiddleButtonPressShape,
+                                pressedShape = ButtonGroupDefaults.connectedMiddleButtonPressShape,
+                            ),
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier
+                                .size(buttonSize)
+                                .animateWidth(interactionSource = actionButtonsControlsInteractionSources[6]),
+                            interactionSource = actionButtonsControlsInteractionSources[6],
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Subtitles,
+                                contentDescription = stringResource(R.string.lyrics),
                                 modifier = Modifier.size(iconSize)
                             )
                         }

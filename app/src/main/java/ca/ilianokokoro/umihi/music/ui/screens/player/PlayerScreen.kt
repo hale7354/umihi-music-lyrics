@@ -51,6 +51,8 @@ import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.QueueBottomSheet
 import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.SleepTimerBottomSheet
 import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.SpeedSelectorBottomSheet
 import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.VolumeBottomSheet
+import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.LyricsBottomSheet
+import ca.ilianokokoro.umihi.music.core.lyrics.LyricsApiClient
 import ca.ilianokokoro.umihi.music.ui.components.song.ExplicitBadge
 import ca.ilianokokoro.umihi.music.ui.screens.player.components.PlayerControls
 
@@ -138,6 +140,9 @@ fun PlayerScreen(
                         onOpenSpeedSelector = {
                             playerViewModel.setSpeedSelectorVisibility(true)
                         },
+                        onOpenLyrics = {
+                            playerViewModel.setLyricsVisibility(true)
+                        },
                         playbackSpeed = uiState.playbackSpeed,
                         sleepTimerRemainingSeconds = uiState.sleepTimerRemainingSeconds,
                     )
@@ -199,6 +204,9 @@ fun PlayerScreen(
                         onOpenSpeedSelector = {
                             playerViewModel.setSpeedSelectorVisibility(true)
                         },
+                        onOpenLyrics = {
+                            playerViewModel.setLyricsVisibility(true)
+                        },
                         playbackSpeed = uiState.playbackSpeed,
                         sleepTimerRemainingSeconds = uiState.sleepTimerRemainingSeconds,
                     )
@@ -234,6 +242,14 @@ fun PlayerScreen(
             changeVisibility = playerViewModel::updateShowVolumeDialog,
             currentVolume = uiState.appVolume,
             onVolumeChange = playerViewModel::setAppVolume
+        )
+    } else if (uiState.isLyricsModalShown) {
+        LyricsBottomSheet(
+            changeVisibility = playerViewModel::setLyricsVisibility,
+            isLoading = uiState.isLyricsLoading,
+            lyrics = uiState.lyricsSynced?.let { LyricsApiClient.stripLrcTimestamps(it) }
+                ?: uiState.lyricsPlain,
+            notFound = uiState.lyricsNotFound,
         )
     }
 }

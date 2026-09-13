@@ -20,6 +20,11 @@ data class PlayerState(
     val isLiking: Boolean = false,
     val showVolumeDialog: Boolean = false,
     val appVolume: Int = 100,
+    val isLyricsModalShown: Boolean = false,
+    val lyricsPlain: String? = null,
+    val lyricsSynced: String? = null,
+    val isLyricsLoading: Boolean = false,
+    val lyricsNotFound: Boolean = false,
 )
 
 @Immutable

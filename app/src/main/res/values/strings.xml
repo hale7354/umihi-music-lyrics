@@ -174,4 +174,6 @@
     <string name="view_the_recorded_diagnostics_logs">View the last recorded diagnostics logs</string>
     <string name="export_logs">Export logs</string>
     <string name="clear_logs">Clear logs</string>
+    <string name="lyrics">Lyrics</string>
+    <string name="lyrics_not_found">Keine Lyrics gefunden</string>
 </resources>

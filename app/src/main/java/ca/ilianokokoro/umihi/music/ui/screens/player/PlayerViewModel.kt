@@ -16,6 +16,7 @@ import androidx.media3.common.Timeline
 import ca.ilianokokoro.umihi.music.core.Constants
 import ca.ilianokokoro.umihi.music.core.helpers.LogHelper.printe
 import ca.ilianokokoro.umihi.music.core.managers.PlayerManager
+import ca.ilianokokoro.umihi.music.core.lyrics.LyricsApiClient
 import ca.ilianokokoro.umihi.music.core.youtube.YoutubeApiClient
 import ca.ilianokokoro.umihi.music.data.repositories.DatastoreRepository
 import kotlinx.coroutines.delay
@@ -197,6 +198,46 @@ class PlayerViewModel(application: Application) :
         }
     }
 
+    private var lastLyricsFetchedFor: String? = null
+
+    fun setLyricsVisibility(show: Boolean) {
+        _uiState.update { it.copy(isLyricsModalShown = show) }
+        if (show) {
+            fetchLyricsForCurrentSong()
+        }
+    }
+
+    private fun fetchLyricsForCurrentSong() {
+        val song = _uiState.value.queue.getOrNull(_uiState.value.currentIndex) ?: return
+        if (lastLyricsFetchedFor == song.youtubeId) {
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLyricsLoading = true,
+                    lyricsNotFound = false,
+                    lyricsPlain = null,
+                    lyricsSynced = null
+                )
+            }
+
+            val durationSeconds = LyricsApiClient.parseDurationToSeconds(song.duration)
+            val result = LyricsApiClient.fetchLyrics(song.title, song.artist, durationSeconds)
+            lastLyricsFetchedFor = song.youtubeId
+
+            _uiState.update {
+                it.copy(
+                    isLyricsLoading = false,
+                    lyricsPlain = result?.plainLyrics,
+                    lyricsSynced = result?.syncedLyrics,
+                    lyricsNotFound = result == null
+                )
+            }
+        }
+    }
+
     private fun updateCurrentSong() {
         val index = PlayerManager.getCurrentIndex()
         val freshQueue = PlayerManager.getQueue()
@@ -218,7 +259,10 @@ class PlayerViewModel(application: Application) :
             state.copy(
                 currentIndex = index,
                 queue = mergedQueue,
-                isLiked = mergedQueue.getOrNull(index)?.isLiked ?: false
+                isLiked = mergedQueue.getOrNull(index)?.isLiked ?: false,
+                lyricsPlain = null,
+                lyricsSynced = null,
+                lyricsNotFound = false,
             )
         }
     }
