@@ -6,6 +6,8 @@ import android.os.Debug
 import android.os.PowerManager
 import ca.ilianokokoro.umihi.music.core.Constants
 import java.io.File
+import kotlinx.coroutines.delay
+import java.io.RandomAccessFile
 
 enum class MetricStatus { GOOD, WARNING, CRITICAL }
 
@@ -19,8 +21,26 @@ data class PerformanceMetric(
 
 object PerformanceMetrics {
 
-    fun collect(context: Context): List<PerformanceMetric> {
+    suspend fun collect(context: Context): List<PerformanceMetric> {
         val results = mutableListOf<PerformanceMetric>()
+
+        // 0. CPU usage (own process, measured over a short window)
+        val cpuPercent = measureCpuUsagePercent()
+        if (cpuPercent != null) {
+            results.add(
+                PerformanceMetric(
+                    id = "cpu",
+                    label = "CPU-Auslastung (App)",
+                    valueText = "%.1f%%".format(cpuPercent),
+                    status = when {
+                        cpuPercent < 15f -> MetricStatus.GOOD
+                        cpuPercent < 40f -> MetricStatus.WARNING
+                        else -> MetricStatus.CRITICAL
+                    },
+                    hint = "Gemessen über ~500ms. Dauerhaft hohe Werte im Leerlauf (ohne Wiedergabe) deuten auf eine Endlosschleife hin."
+                )
+            )
+        }
 
         // 1. App RAM usage (PSS)
         val memInfo = Debug.MemoryInfo()
@@ -126,6 +146,48 @@ object PerformanceMetrics {
         )
 
         return results
+    }
+
+    /**
+     * Reads /proc/self/stat twice with a delay and computes CPU usage percentage
+     * relative to elapsed wall-clock time and number of cores.
+     * Returns null if /proc access is restricted (varies by OEM/Android version).
+     */
+    private suspend fun measureCpuUsagePercent(): Float? {
+        val clkTck = 100L // standard USER_HZ on Android
+        val cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+
+        val first = readProcessJiffies() ?: return null
+        val startTime = System.nanoTime()
+        delay(500)
+        val second = readProcessJiffies() ?: return null
+        val elapsedNanos = System.nanoTime() - startTime
+
+        val jiffiesDelta = (second - first).coerceAtLeast(0)
+        val elapsedSeconds = elapsedNanos / 1_000_000_000.0
+        val processCpuSeconds = jiffiesDelta / clkTck.toDouble()
+
+        val usage = (processCpuSeconds / elapsedSeconds / cores) * 100.0
+        return usage.toFloat().coerceIn(0f, 100f * cores)
+    }
+
+    private fun readProcessJiffies(): Long? {
+        return try {
+            RandomAccessFile("/proc/self/stat", "r").use { raf ->
+                val line = raf.readLine() ?: return null
+                // Fields are space-separated; utime=14th, stime=15th field (1-indexed)
+                // comm field (2nd) may contain spaces, so split after the closing ')'
+                val afterComm = line.substringAfter(") ")
+                val fields = afterComm.split(" ")
+                // After splitting on ") ", field index 0 corresponds to original field 3 (state)
+                // utime is original field 14 -> index 11 here, stime is field 15 -> index 12
+                val utime = fields.getOrNull(11)?.toLongOrNull() ?: return null
+                val stime = fields.getOrNull(12)?.toLongOrNull() ?: return null
+                utime + stime
+            }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun dirSizeMB(dir: File): Long {

@@ -21,7 +21,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +43,12 @@ fun PerformanceScreen(
     application: Application,
 ) {
     val context = LocalContext.current
-    var metrics by remember { mutableStateOf(PerformanceMetrics.collect(context)) }
+    var metrics by remember { mutableStateOf<List<PerformanceMetric>?>(null) }
+    var refreshTrigger by remember { mutableStateOf(0) }
+
+    LaunchedEffect(refreshTrigger) {
+        metrics = PerformanceMetrics.collect(context)
+    }
 
     Column(
         modifier = Modifier
@@ -65,20 +72,30 @@ fun PerformanceScreen(
                     style = MaterialTheme.typography.headlineSmall
                 )
             }
-            IconButton(onClick = { metrics = PerformanceMetrics.collect(context) }) {
+            IconButton(onClick = { refreshTrigger++ }) {
                 Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Aktualisieren")
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            metrics.forEach { metric ->
-                PerformanceMetricRow(metric)
+        val currentMetrics = metrics
+        if (currentMetrics == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                currentMetrics.forEach { metric ->
+                    PerformanceMetricRow(metric)
+                }
             }
         }
     }
