@@ -89,6 +89,7 @@ android {
         }
 
         debug {
+            applicationIdSuffix = ".dev"
             isDebuggable = true
         }
 
