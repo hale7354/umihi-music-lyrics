@@ -52,7 +52,6 @@ import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.SleepTimerBottomShe
 import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.SpeedSelectorBottomSheet
 import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.VolumeBottomSheet
 import ca.ilianokokoro.umihi.music.ui.components.bottomsheet.LyricsBottomSheet
-import ca.ilianokokoro.umihi.music.core.lyrics.LyricsApiClient
 import ca.ilianokokoro.umihi.music.ui.components.song.ExplicitBadge
 import ca.ilianokokoro.umihi.music.ui.screens.player.components.PlayerControls
 
@@ -247,9 +246,13 @@ fun PlayerScreen(
         LyricsBottomSheet(
             changeVisibility = playerViewModel::setLyricsVisibility,
             isLoading = uiState.isLyricsLoading,
-            lyrics = uiState.lyricsSynced?.let { LyricsApiClient.stripLrcTimestamps(it) }
-                ?: uiState.lyricsPlain,
+            lyricsPlain = uiState.lyricsPlain,
+            lyricsLines = uiState.lyricsLines,
             notFound = uiState.lyricsNotFound,
+            songTitle = currentSong?.title,
+            thumbnailUrl = currentSong?.thumbnailHref,
+            playbackProgress = playerViewModel.playbackProgress,
+            onSeek = playerViewModel::seek,
         )
     }
 }

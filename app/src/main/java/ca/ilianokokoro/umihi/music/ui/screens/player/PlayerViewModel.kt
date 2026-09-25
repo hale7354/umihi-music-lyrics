@@ -17,6 +17,7 @@ import ca.ilianokokoro.umihi.music.core.Constants
 import ca.ilianokokoro.umihi.music.core.helpers.LogHelper.printe
 import ca.ilianokokoro.umihi.music.core.managers.PlayerManager
 import ca.ilianokokoro.umihi.music.core.lyrics.LyricsApiClient
+import ca.ilianokokoro.umihi.music.core.lyrics.LrcParser
 import ca.ilianokokoro.umihi.music.core.youtube.YoutubeApiClient
 import ca.ilianokokoro.umihi.music.data.repositories.DatastoreRepository
 import kotlinx.coroutines.delay
@@ -225,6 +226,7 @@ class PlayerViewModel(application: Application) :
 
             val durationSeconds = LyricsApiClient.parseDurationToSeconds(song.duration)
             val result = LyricsApiClient.fetchLyrics(song.title, song.artist, durationSeconds)
+            val syncedLines = result?.syncedLyrics?.let { LrcParser.parse(it) } ?: emptyList()
             lastLyricsFetchedFor = song.youtubeId
 
             _uiState.update {
@@ -232,6 +234,7 @@ class PlayerViewModel(application: Application) :
                     isLyricsLoading = false,
                     lyricsPlain = result?.plainLyrics,
                     lyricsSynced = result?.syncedLyrics,
+                    lyricsLines = syncedLines,
                     lyricsNotFound = result == null
                 )
             }
@@ -262,6 +265,7 @@ class PlayerViewModel(application: Application) :
                 isLiked = mergedQueue.getOrNull(index)?.isLiked ?: false,
                 lyricsPlain = null,
                 lyricsSynced = null,
+                lyricsLines = emptyList(),
                 lyricsNotFound = false,
             )
         }
