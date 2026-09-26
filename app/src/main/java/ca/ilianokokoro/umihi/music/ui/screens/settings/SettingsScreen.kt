@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Memory
-import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.StayCurrentPortrait
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Update
@@ -64,7 +63,6 @@ import ca.ilianokokoro.umihi.music.ui.screens.settings.components.SettingsSectio
 @Composable
 fun SettingsScreen(
     openAuthScreen: () -> Unit,
-    openPerformanceScreen: () -> Unit,
     application: Application,
     sharedViewModel: SharedViewModel,
     settingsViewModel: SettingsViewModel = viewModel(
@@ -333,17 +331,6 @@ fun SettingsScreen(
                                     }
                                 )
                             }
-                        }
-
-                        SettingsSection(
-                            title = "Performance"
-                        ) {
-                            SettingsItem(
-                                title = "Performance-Check",
-                                subtitle = "Zeigt RAM, Cache, Datenbank & Akku-Status",
-                                leadingIcon = Icons.Outlined.Speed,
-                                onClick = openPerformanceScreen
-                            )
                         }
 
                         if (uiState.showUpdateChannelSheet) {

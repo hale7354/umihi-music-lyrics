@@ -176,4 +176,5 @@
     <string name="clear_logs">Clear logs</string>
     <string name="lyrics">Lyrics</string>
     <string name="lyrics_not_found">Keine Lyrics gefunden</string>
+    <string name="lyrics_instrumental">Instrumental – keine Lyrics vorhanden</string>
 </resources>

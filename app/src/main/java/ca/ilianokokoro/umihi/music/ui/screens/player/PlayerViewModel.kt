@@ -17,7 +17,6 @@ import ca.ilianokokoro.umihi.music.core.Constants
 import ca.ilianokokoro.umihi.music.core.helpers.LogHelper.printe
 import ca.ilianokokoro.umihi.music.core.managers.PlayerManager
 import ca.ilianokokoro.umihi.music.core.lyrics.LyricsApiClient
-import ca.ilianokokoro.umihi.music.core.lyrics.LrcParser
 import ca.ilianokokoro.umihi.music.core.youtube.YoutubeApiClient
 import ca.ilianokokoro.umihi.music.data.repositories.DatastoreRepository
 import kotlinx.coroutines.delay
@@ -220,22 +219,29 @@ class PlayerViewModel(application: Application) :
                     isLyricsLoading = true,
                     lyricsNotFound = false,
                     lyricsPlain = null,
-                    lyricsSynced = null
+                    lyricsSynced = null,
+                    lyricsSyncedLines = emptyList(),
                 )
             }
 
             val durationSeconds = LyricsApiClient.parseDurationToSeconds(song.duration)
             val result = LyricsApiClient.fetchLyrics(song.title, song.artist, durationSeconds)
-            val syncedLines = result?.syncedLyrics?.let { LrcParser.parse(it) } ?: emptyList()
             lastLyricsFetchedFor = song.youtubeId
+
+            val syncedLines = result?.syncedLyrics
+                ?.let { LyricsApiClient.parseSyncedLyrics(it) }
+                ?.takeIf { it.isNotEmpty() }
+                .orEmpty()
 
             _uiState.update {
                 it.copy(
                     isLyricsLoading = false,
                     lyricsPlain = result?.plainLyrics,
                     lyricsSynced = result?.syncedLyrics,
-                    lyricsLines = syncedLines,
-                    lyricsNotFound = result == null
+                    lyricsSyncedLines = syncedLines,
+                    lyricsInstrumental = result?.instrumental == true,
+                    // Instrumental tracks are a valid, "found" result, not a lookup failure.
+                    lyricsNotFound = result == null || !result.hasContent,
                 )
             }
         }
@@ -265,8 +271,9 @@ class PlayerViewModel(application: Application) :
                 isLiked = mergedQueue.getOrNull(index)?.isLiked ?: false,
                 lyricsPlain = null,
                 lyricsSynced = null,
-                lyricsLines = emptyList(),
+                lyricsSyncedLines = emptyList(),
                 lyricsNotFound = false,
+                lyricsInstrumental = false,
             )
         }
     }
@@ -296,7 +303,7 @@ class PlayerViewModel(application: Application) :
             while (true) {
                 val state = _uiState.value
 
-                if (!state.isSeekBarHeld && !state.isLoading && state.isPlaying) {
+                if (!state.isSeekBarHeld && !state.isLoading) {
                     val controller = PlayerManager.currentController
 
                     val rawPosition = controller?.currentPosition

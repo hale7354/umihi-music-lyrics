@@ -66,6 +66,7 @@ fun PlayerScreen(
     )
 ) {
     val uiState = playerViewModel.uiState.collectAsStateWithLifecycle().value
+    val playbackProgress = playerViewModel.playbackProgress.collectAsStateWithLifecycle().value
     val orientation = LocalConfiguration.current.orientation
     val currentSong = uiState.queue.getOrNull(uiState.currentIndex)
 
@@ -247,12 +248,10 @@ fun PlayerScreen(
             changeVisibility = playerViewModel::setLyricsVisibility,
             isLoading = uiState.isLyricsLoading,
             lyricsPlain = uiState.lyricsPlain,
-            lyricsLines = uiState.lyricsLines,
+            syncedLines = uiState.lyricsSyncedLines,
+            positionMs = playbackProgress.position.toLong(),
             notFound = uiState.lyricsNotFound,
-            songTitle = currentSong?.title,
-            thumbnailUrl = currentSong?.thumbnailHref,
-            playbackProgress = playerViewModel.playbackProgress,
-            onSeek = playerViewModel::seek,
+            instrumental = uiState.lyricsInstrumental,
         )
     }
 }

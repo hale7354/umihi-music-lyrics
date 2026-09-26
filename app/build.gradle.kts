@@ -89,7 +89,6 @@ android {
         }
 
         debug {
-            applicationIdSuffix = ".dev"
             isDebuggable = true
         }
 
@@ -200,7 +199,6 @@ dependencies {
     // Coil (images)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-    implementation(libs.androidx.palette)
 
     // Exoplayer
     implementation(libs.androidx.media3.exoplayer)

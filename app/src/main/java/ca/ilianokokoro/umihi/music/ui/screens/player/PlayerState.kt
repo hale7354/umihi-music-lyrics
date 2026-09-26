@@ -1,7 +1,7 @@
 package ca.ilianokokoro.umihi.music.ui.screens.player
 
 import androidx.compose.runtime.Immutable
-import ca.ilianokokoro.umihi.music.core.lyrics.LyricLine
+import ca.ilianokokoro.umihi.music.core.lyrics.LyricsLine
 import ca.ilianokokoro.umihi.music.models.Song
 
 @Immutable
@@ -24,9 +24,10 @@ data class PlayerState(
     val isLyricsModalShown: Boolean = false,
     val lyricsPlain: String? = null,
     val lyricsSynced: String? = null,
-    val lyricsLines: List<LyricLine> = emptyList(),
+    val lyricsSyncedLines: List<LyricsLine> = emptyList(),
     val isLyricsLoading: Boolean = false,
     val lyricsNotFound: Boolean = false,
+    val lyricsInstrumental: Boolean = false,
 )
 
 @Immutable
