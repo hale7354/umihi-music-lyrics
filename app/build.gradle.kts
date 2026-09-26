@@ -90,6 +90,8 @@ android {
 
         debug {
             isDebuggable = true
+            applicationIdSuffix = ".lyrics"
+            versionNameSuffix = "-lyrics-debug"
         }
 
         create("diagnostic") {
